@@ -13,8 +13,14 @@ class CustomApi(http.Controller):
         data = {'session_id': data.get('session_id')}
         return json.dumps(data, indent=4)
 
+    @http.route('/api/products', auth='user', type='http', csrf=False, methods=['GET'])
+    def get_products(self, **kw):
+        products = http.request.env['product.template'].search([])
+        products = products.mapped('name')
+        return json.dumps({'data': products}, indent=4)
+
     @http.route('/api/products/images', auth='user', type='http', csrf=False, methods=['GET'])
-    def index(self, **kw):
+    def get_products_images(self, **kw):
         products = http.request.env['product.template'].search([])
         data = list()
         for product in products:
