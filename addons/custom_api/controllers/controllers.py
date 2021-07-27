@@ -2,10 +2,18 @@
 from odoo import http
 import json
 
-from werkzeug.wrappers import Request
-
 class CustomApi(http.Controller):
-    @http.route('/api/products/images', auth='user', type='http')
+    @http.route('/api/auth', type='http', auth="none", csrf=False, methods=['POST'])
+    def authenticate(self, db, login, password):
+        try:
+            http.request.session.authenticate(db, login, password)
+        except Exception as e:
+            return json.dumps({'status': 'Authentication Failed'})
+        data = http.request.env['ir.http'].session_info()
+        data = {'session_id': data.get('session_id')}
+        return json.dumps(data, indent=4)
+
+    @http.route('/api/products/images', auth='user', type='http', csrf=False, methods=['GET'])
     def index(self, **kw):
         products = http.request.env['product.template'].search([])
         data = list()
@@ -17,5 +25,4 @@ class CustomApi(http.Controller):
                     'name': product['name'],
                     'images': images_urls
                 })
-        data = {'data': data}
-        return json.dumps(data)
+        return json.dumps({'data': data}, indent=4)
